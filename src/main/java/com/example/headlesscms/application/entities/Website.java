@@ -1,0 +1,118 @@
+package com.example.headlesscms.application.entities;
+
+import com.example.headlesscms.models.User;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.TextIndexed;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.DocumentReference;
+
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+@Document(collection = "websites")
+public class Website {
+
+    @Id
+    private final String id;
+
+    @NotBlank
+    @Size(max = 50)
+    @TextIndexed
+    private String websiteTitle;
+
+    @Size(max = 200)
+    private String websiteDescription;
+
+    @DocumentReference
+    private String creatorOfWebsite;
+
+    @DocumentReference
+    private List<User> listOfModerators;
+
+    private Map<String, Article> listOfArticles;
+
+
+    public Website(String id, String websiteTitle, String websiteDescription, String creatorOfWebsite, List<User> listOfModerators, Map<String, Article> listOfArticles) {
+        this.id = id;
+        this.websiteTitle = websiteTitle;
+        this.websiteDescription = websiteDescription;
+        this.creatorOfWebsite = creatorOfWebsite;
+        this.listOfModerators = listOfModerators;
+        this.listOfArticles = listOfArticles;
+    }
+
+    public List<String> getModerators()
+    {
+        List<String> temp = new ArrayList<>();
+        for (User mod:listOfModerators) {
+            temp.add("Username: " + mod.getUsername() +
+                    ". Email: " + mod.getEmail() + " ");
+        }
+        return temp;
+    }
+
+    public boolean getModeratorId(String id)
+    {
+        for (User mod:listOfModerators) {
+            if (id.equals(mod.getId())){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public Map<String, Article> getArticles()
+    {
+        return listOfArticles;
+    }
+
+    public Article getArticle(String key){
+        if(listOfArticles.containsKey(key)){
+            return listOfArticles.get(key);
+        }
+        return null;
+    }
+
+    public boolean addArticle(String title, Article article)
+    {
+        if (!listOfArticles.containsKey(title)) {
+            listOfArticles.put(title, article);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean addModerator(User user)
+    {
+        if (listOfModerators.contains(user)) {return true;}
+        return listOfModerators.add(user);
+    }
+
+
+    public String getWebsiteTitle() {
+        return websiteTitle;
+    }
+
+    public void setWebsiteTitle(String websiteTitle) {
+        this.websiteTitle = websiteTitle;
+    }
+
+    public String getWebsiteDescription() {
+        return websiteDescription;
+    }
+
+    public void setWebsiteDescription(String websiteDescription) {
+        this.websiteDescription = websiteDescription;
+    }
+
+    public String getCreatorOfWebsite() {
+        return creatorOfWebsite;
+    }
+
+    public void setCreatorOfWebsite(String creatorOfWebsite) {
+        this.creatorOfWebsite = creatorOfWebsite;
+    }
+}
