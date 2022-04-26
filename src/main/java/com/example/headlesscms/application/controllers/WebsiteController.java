@@ -1,6 +1,7 @@
 package com.example.headlesscms.application.controllers;
 
 import com.example.headlesscms.application.entities.Website;
+import com.example.headlesscms.application.repositories.ArticleRepository;
 import com.example.headlesscms.application.repositories.WebsiteRepository;
 import com.example.headlesscms.security.services.UserDetailsImplementation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,9 @@ public class WebsiteController {
 
     @Autowired
     WebsiteRepository websiteRepository;
+
+    @Autowired
+    ArticleRepository articleRepository;
 
     UserDetailsImplementation currentUser(){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

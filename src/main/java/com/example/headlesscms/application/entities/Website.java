@@ -10,7 +10,6 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @Document(collection = "websites")
 public class Website {
@@ -30,67 +29,35 @@ public class Website {
     private String creatorOfWebsite;
 
     @DocumentReference
-    private List<User> listOfModerators;
+    private List<User> listOfModeratorsOnWebsite;
 
-    private Map<String, Article> listOfArticles;
+    //TODO check it's working fine
+    @DocumentReference
+    private List<Article> listOfArticlesOnWebsite;
+
+    //TODO check mongoDB
+    @DocumentReference
+    private List<Website> listOfAllWebsites;
 
 
-    public Website(String id, String websiteTitle, String websiteDescription, String creatorOfWebsite, List<User> listOfModerators, Map<String, Article> listOfArticles) {
+    public Website(String id, String websiteTitle, String websiteDescription, String creatorOfWebsite, List<User> listOfModeratorsOnWebsite, List<Article> listOfArticlesOnWebsite) {
+        //several websites can have the same name, because of that a website has a unique id.
         this.id = id;
         this.websiteTitle = websiteTitle;
         this.websiteDescription = websiteDescription;
         this.creatorOfWebsite = creatorOfWebsite;
-        this.listOfModerators = listOfModerators;
-        this.listOfArticles = listOfArticles;
+        this.listOfModeratorsOnWebsite = listOfModeratorsOnWebsite;
+        this.listOfArticlesOnWebsite = listOfArticlesOnWebsite;
     }
 
-    public List<String> getModerators()
-    {
-        List<String> temp = new ArrayList<>();
-        for (User mod:listOfModerators) {
-            temp.add("Username: " + mod.getUsername() +
-                    ". Email: " + mod.getEmail() + " ");
-        }
-        return temp;
-    }
-
-    public boolean getModeratorId(String id)
-    {
-        for (User mod:listOfModerators) {
-            if (id.equals(mod.getId())){
+    public boolean idCheckedIsModeratorOnWebpage(String id) {
+        for (User mod : listOfModeratorsOnWebsite) {
+            if (id.equals(mod.getId())) {
                 return true;
             }
         }
         return false;
     }
-
-    public Map<String, Article> getArticles()
-    {
-        return listOfArticles;
-    }
-
-    public Article getArticle(String key){
-        if(listOfArticles.containsKey(key)){
-            return listOfArticles.get(key);
-        }
-        return null;
-    }
-
-    public boolean addArticle(String title, Article article)
-    {
-        if (!listOfArticles.containsKey(title)) {
-            listOfArticles.put(title, article);
-            return true;
-        }
-        return false;
-    }
-
-    public boolean addModerator(User user)
-    {
-        if (listOfModerators.contains(user)) {return true;}
-        return listOfModerators.add(user);
-    }
-
 
     public String getWebsiteTitle() {
         return websiteTitle;
@@ -107,6 +74,44 @@ public class Website {
     public void setWebsiteDescription(String websiteDescription) {
         this.websiteDescription = websiteDescription;
     }
+
+    public List<User> getListOfModeratorsOnWebsite() {
+        return listOfModeratorsOnWebsite;
+    }
+
+    //add moderator (duplicate method)
+    public List<String> getModerators() {
+        List<String> temp = new ArrayList<>();
+        for (User mod : listOfModeratorsOnWebsite) {
+            temp.add("Username: " + mod.getUsername() +
+                    ". Email: " + mod.getEmail() + " ");
+        }
+        return temp;
+    }
+
+    public void setListOfModeratorsOnWebsite(List<User> listOfModeratorsOnWebsite) {
+        this.listOfModeratorsOnWebsite = listOfModeratorsOnWebsite;
+    }
+
+    public List<Article> getListOfArticlesOnWebsite() {
+        return listOfArticlesOnWebsite;
+    }
+
+    //TODO to test
+    public List<Website> getListOfAllWebsites() {
+        //create new object to return, for more safety
+        List<Website> listOfAllWebsitesTemp = new ArrayList<>();
+        listOfAllWebsitesTemp.addAll(getListOfAllWebsites());
+        return listOfAllWebsites;
+    }
+
+    public boolean addModerator(User user) {
+        if (listOfModeratorsOnWebsite.contains(user)) {
+            return true;
+        }
+        return listOfModeratorsOnWebsite.add(user);
+    }
+
 
     public String getCreatorOfWebsite() {
         return creatorOfWebsite;

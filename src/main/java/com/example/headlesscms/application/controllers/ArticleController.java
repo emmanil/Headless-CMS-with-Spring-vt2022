@@ -1,7 +1,7 @@
 package com.example.headlesscms.application.controllers;
 
 import com.example.headlesscms.application.entities.Article;
-import com.example.headlesscms.application.entities.Website;
+import com.example.headlesscms.application.repositories.ArticleRepository;
 import com.example.headlesscms.application.repositories.WebsiteRepository;
 import com.example.headlesscms.repositories.UserRepository;
 import com.example.headlesscms.security.services.UserDetailsImplementation;
@@ -17,38 +17,53 @@ import org.springframework.web.bind.annotation.*;
 public class ArticleController {
 
     final WebsiteRepository websiteRepository;
+    final ArticleRepository articleRepository;
     final UserRepository userRepository;
 
-
-    public ArticleController(WebsiteRepository websiteRepository, UserRepository userRepository) {
+    public ArticleController(WebsiteRepository websiteRepository, ArticleRepository articleRepository, UserRepository userRepository) {
         this.websiteRepository = websiteRepository;
+        this.articleRepository = articleRepository;
         this.userRepository = userRepository;
     }
 
-    UserDetailsImplementation currentUser(){
+    UserDetailsImplementation currentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         return (UserDetailsImplementation) authentication.getPrincipal();
     }
 
     //@GetMapping("/{websiteTitle}/{articleTitle}")
-
-    @PostMapping("/create/{articleTitle}")
+    @PostMapping("/createNewArticle")
     @PreAuthorize("hasRole('admin')")
-    public Website createArticle(@PathVariable String websiteTitle, @RequestBody Article articleBody){
-        if (!websiteRepository.existsByWebsiteTitle(websiteTitle)){
-            System.out.println("website with name "+websiteTitle+ " does not exist.");
-            return null;
-        }
-        if ( websiteRepository.existsByWebsiteTitle(websiteTitle) && ( currentUser().getId().equals(websiteRepository.findByWebsiteTitle(websiteTitle).getCreatorOfWebsite()) || websiteRepository.findByWebsiteTitle(websiteTitle).getModeratorId(currentUser().getId())) ){
-        Website website = websiteRepository.findByWebsiteTitle(websiteTitle);
-        website.addArticle(articleBody.getArticleTitle(), new Article(articleBody.getArticleTitle(), articleBody.getArticleText()) );
+    public Article createArticle(@RequestBody Article articleBody) {
 
-        return websiteRepository.save(website);
-        }else {
+        //no website-name at all is given
+        if (articleBody.getNameOfWebsiteThatArticleBelongsTo().isEmpty()) {
+            System.out.println("website with name " + articleBody.getNameOfWebsiteThatArticleBelongsTo() + " is empty.");
             return null;
         }
 
+        String websiteTitel = articleBody.getArticleTitle();
+        String nameOfWebsiteThatArticleBelongsTo = articleBody.getNameOfWebsiteThatArticleBelongsTo();
+
+        //website-name not found at listOfAllWebsites
+        if (websiteRepository.findByWebsiteTitle(websiteTitel).equals(null)) {
+            System.out.println("website with name " + articleBody.getNameOfWebsiteThatArticleBelongsTo() + " does not exist.");
+            return null;
+        }
+
+        //logged-in user is creatorOfWebsite || logged-in user is moderator on website)
+        if (currentUser().getId().equals(websiteRepository.findByWebsiteTitle(nameOfWebsiteThatArticleBelongsTo).getCreatorOfWebsite()) ||
+          websiteRepository.findByWebsiteTitle(nameOfWebsiteThatArticleBelongsTo).idCheckedIsModeratorOnWebpage(currentUser().getId())) {
+
+            if (articleBody.addArticle(articleBody)){
+                return articleRepository.save(articleBody);
+
+            }
+
+        }
+        return null;
     }
+
 
 
 
