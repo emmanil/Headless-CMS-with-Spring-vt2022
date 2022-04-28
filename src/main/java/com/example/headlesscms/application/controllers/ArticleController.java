@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/website/articles")
 public class ArticleController {
 
-    final WebsiteRepository websiteRepository;
+    final WebsiteRepository websiteRepository; //is it needed?
     final ArticleRepository articleRepository;
     final UserRepository userRepository;
 

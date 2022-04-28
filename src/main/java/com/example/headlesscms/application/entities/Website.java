@@ -26,12 +26,12 @@ public class Website {
     private String websiteDescription;
 
     @DocumentReference
-    private String creatorOfWebsite;
+    private User creatorOfWebsite;
 
     @DocumentReference
     private List<User> listOfModeratorsOnWebsite;
 
-    //TODO check it's working fine
+    //TODO check mongoDB
     @DocumentReference
     private List<Article> listOfArticlesOnWebsite;
 
@@ -40,7 +40,7 @@ public class Website {
     private List<Website> listOfAllWebsites;
 
 
-    public Website(String id, String websiteTitle, String websiteDescription, String creatorOfWebsite, List<User> listOfModeratorsOnWebsite, List<Article> listOfArticlesOnWebsite) {
+    public Website(String id, String websiteTitle, String websiteDescription, User creatorOfWebsite, List<User> listOfModeratorsOnWebsite, List<Article> listOfArticlesOnWebsite) {
         //several websites can have the same name, because of that a website has a unique id.
         this.id = id;
         this.websiteTitle = websiteTitle;
@@ -48,6 +48,10 @@ public class Website {
         this.creatorOfWebsite = creatorOfWebsite;
         this.listOfModeratorsOnWebsite = listOfModeratorsOnWebsite;
         this.listOfArticlesOnWebsite = listOfArticlesOnWebsite;
+    }
+
+    public String getId() {
+        return id;
     }
 
     public boolean idCheckedIsModeratorOnWebpage(String id) {
@@ -113,11 +117,11 @@ public class Website {
     }
 
 
-    public String getCreatorOfWebsite() {
+    public User getCreatorOfWebsite() {
         return creatorOfWebsite;
     }
 
-    public void setCreatorOfWebsite(String creatorOfWebsite) {
+    public void setCreatorOfWebsite(User creatorOfWebsite) {
         this.creatorOfWebsite = creatorOfWebsite;
     }
 }

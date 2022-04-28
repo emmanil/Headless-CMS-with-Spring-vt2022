@@ -6,7 +6,6 @@ import com.example.headlesscms.models.User;
 import com.example.headlesscms.payload.request.LoginRequest;
 import com.example.headlesscms.payload.request.SignupRequest;
 import com.example.headlesscms.payload.response.JwtResponse;
-import com.example.headlesscms.payload.response.MessageResponse;
 import com.example.headlesscms.repositories.RoleRepository;
 import com.example.headlesscms.repositories.UserRepository;
 import com.example.headlesscms.security.jwt.JwtUtils;

@@ -1,60 +1,109 @@
 package com.example.headlesscms.application.controllers;
 
+import com.example.headlesscms.application.entities.Article;
 import com.example.headlesscms.application.entities.Website;
 import com.example.headlesscms.application.repositories.ArticleRepository;
 import com.example.headlesscms.application.repositories.WebsiteRepository;
+import com.example.headlesscms.models.User;
+import com.example.headlesscms.repositories.UserRepository;
 import com.example.headlesscms.security.services.UserDetailsImplementation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.mapping.DocumentReference;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.*;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/api/websites")
 public class WebsiteController {
 
-    @Autowired
-    WebsiteRepository websiteRepository;
+    final WebsiteRepository websiteRepository;
+    final UserRepository userRepository;
+    final ArticleRepository articleRepository;
 
-    @Autowired
-    ArticleRepository articleRepository;
+    public WebsiteController(WebsiteRepository websiteRepository, UserRepository userRepository, ArticleRepository articleRepository) {
+        this.websiteRepository = websiteRepository;
+        this.userRepository = userRepository;
+        this.articleRepository = articleRepository;
+    }
 
-    UserDetailsImplementation currentUser(){
+    UserDetailsImplementation currentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetailsImplementation userDetails = (UserDetailsImplementation) authentication.getPrincipal();
         return userDetails;
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{websiteTitle}")
     @PreAuthorize("permitAll()")
-    public Website get(@PathVariable String id) {
-        return websiteRepository.findById(id).get();
+    public ResponseEntity<?> getOne(@PathVariable String websiteTitle) {
+
+        if (websiteRepository.existsByWebsiteTitle(websiteTitle) && articleRepository.existsByNameOfWebsiteThatArticleBelongsTo(websiteTitle)) {
+            Website website = websiteRepository.findByWebsiteTitle(websiteTitle);
+            Article article = articleRepository.findByNameOfWebsiteThatArticleBelongsTo(websiteTitle);
+
+            String message = "Title: " + website.getWebsiteTitle() + ". "
+                    + "Description: " + website.getWebsiteDescription()
+                    + ". Moderators: " + website.getModerators()
+                    + " .Articles: " + articleRepository.findByNameOfWebsiteThatArticleBelongsTo(websiteTitle)
+                    + ".  Creator of website: " + website.getCreatorOfWebsite();
+            return ResponseEntity.ok(message);
+        }
+        return ResponseEntity.badRequest().body("ERROR: No site found");
     }
 
+    /*
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public Website create(@RequestBody Website website){
         website.setCreatorOfWebsite(currentUser().getId());
         return websiteRepository.save(website);
     }
+    */
 
-    @PutMapping
-    @PreAuthorize("hasRole('ADMIN')")
-    public String update(){
-        return "Website updated.";
+
+    @PostMapping("/createNewWebsite")
+    @PreAuthorize("hasRole('USER')")
+    public User create(@RequestBody Website websiteBody) {
+        User creatorOfWebsite = userRepository.findById(currentUser().getId()).orElse(null);
+        if (creatorOfWebsite == null) {
+            return null;
+        }
+
+        List<User> listOfModeratorsOnWebsite = new ArrayList<>();
+        List<Article> listOfArticlesOnWebsite = new ArrayList<>();
+
+        //TODO check static context
+        return WebsiteRepository.save(new Website(websiteBody.getId(), websiteBody.getWebsiteTitle(), websiteBody.getWebsiteDescription(), creatorOfWebsite, listOfModeratorsOnWebsite, listOfArticlesOnWebsite));
     }
 
-    @PatchMapping
-    @PreAuthorize("hasRole('ADMIN')")
-    public String updateProperty(){
-        return "Single website property updated.";
+    //update
+    @PutMapping("/updateWebside")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<?> update(@RequestBody Website updatedWebsiteBody) {
+        //website exists and logger in user is creator/or moderator
+        if (websiteRepository.findByWebsiteTitle(updatedWebsiteBody.getWebsiteTitle()).getCreatorOfWebsite().getId()
+                .equals(Objects.requireNonNull(userRepository.findById(currentUser().getId()).orElse(null)).getId())
+                || websiteRepository.findByWebsiteTitle(updatedWebsiteBody.getWebsiteTitle()).getListOfModeratorsOnWebsite().contains(currentUser().getId()))
+        {
+            Website temp = websiteRepository.findByWebsiteTitle(updatedWebsiteBody.getWebsiteTitle());
+            temp = updatedWebsiteBody;
+            websiteRepository.save(temp);
+            return ResponseEntity.ok("Site updated successfully!");
+        }
+
+        return ResponseEntity.badRequest().body("ERROR: CREATOR or MODERATOR access is required.");
     }
+
+
 
     @DeleteMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public String delete(){
+    public String delete() {
         return "Website is deleted.";
     }
 

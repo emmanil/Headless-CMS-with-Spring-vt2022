@@ -5,6 +5,15 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 
 public interface ArticleRepository extends MongoRepository<Article, String> {
 
-    Article getAllByArticleTitle (String articleTitle);
+    boolean existsByArticleTitle(String ArticleTitle);
+
+    boolean existsByNameOfWebsiteThatArticleBelongsTo(String NameOfWebsiteThatArticleBelongsTo);
+
+    Article findByNameOfWebsiteThatArticleBelongsTo(String NameOfWebsiteThatArticleBelongsTo);
+
+    Article getByArticleTitleExists(String articleTitle);
+
+    Article findByArticleTitle(String ArticleTitle);
+
 
 }

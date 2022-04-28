@@ -5,9 +5,12 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 
 public interface WebsiteRepository extends MongoRepository<Website, String> {
 
-Website findByWebsiteTitle(String websiteTitle);
-boolean existsByWebsiteTitle(String websiteTitle);
-Website findCreatorOfWebsite (String creatorOfWebsite);
-Website getAllByWebsiteTitle (String websiteTitle);
+    boolean existsByWebsiteTitle(String websiteTitle);
+
+    Website findByWebsiteTitle(String websiteTitle);
+
+    Website findCreatorOfWebsite(String creatorOfWebsite);
+
+    Website getAllByWebsiteTitle(String websiteTitle);
 
 }

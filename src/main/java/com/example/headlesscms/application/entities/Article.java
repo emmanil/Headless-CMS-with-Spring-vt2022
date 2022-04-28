@@ -13,6 +13,7 @@ public class Article {
     private String articleText;
     private String nameOfWebsiteThatArticleBelongsTo;
 
+
     public Article(String articleTitle, String articleText, String nameOfWebsiteThatArticleBelongsTo) {
         //several websites can have the same name, because of that a website has a unique id.
         this.id = id;
