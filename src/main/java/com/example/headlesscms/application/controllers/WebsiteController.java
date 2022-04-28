@@ -123,9 +123,12 @@ public class WebsiteController {
     @PutMapping
     @PreAuthorize("hasRole('ADMIN')")
     public String update() {
+        //todo
+
         return "Website updated.";
     }
 
+    //to test
     @DeleteMapping("/deleteWebsite")
     @PreAuthorize("hasRole('ADMIN')")
     public String delete(@RequestBody Website website) {
