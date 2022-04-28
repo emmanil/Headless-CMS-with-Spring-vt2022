@@ -56,16 +56,8 @@ public class WebsiteController {
         return ResponseEntity.badRequest().body("ERROR: No site found");
     }
 
-    /*
-    @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
-    public Website create(@RequestBody Website website){
-        website.setCreatorOfWebsite(currentUser().getId());
-        return websiteRepository.save(website);
-    }
-    */
-
-
+    //to test
+    //TODO check static context
     @PostMapping("/createNewWebsite")
     @PreAuthorize("hasRole('USER')")
     public User create(@RequestBody Website websiteBody) {
@@ -81,7 +73,7 @@ public class WebsiteController {
         return WebsiteRepository.save(new Website(websiteBody.getId(), websiteBody.getWebsiteTitle(), websiteBody.getWebsiteDescription(), creatorOfWebsite, listOfModeratorsOnWebsite, listOfArticlesOnWebsite));
     }
 
-    //update
+    //to test
     @PutMapping("/updateWebside")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> update(@RequestBody Website updatedWebsiteBody) {
@@ -99,12 +91,53 @@ public class WebsiteController {
         return ResponseEntity.badRequest().body("ERROR: CREATOR or MODERATOR access is required.");
     }
 
+    //to test
+    @PutMapping("/addmoderator")
+    @PreAuthorize("hasRole('USER')")
+    public Website update(@RequestParam String username) {
+        if (websiteRepository.findCreatorOfWebsite(username).getId().equals(currentUser().getId()))
+        {
+            Website temp = websiteRepository.findCreatorOfWebsite(username);
+            temp.addModerator(userRepository.getByUsername(username));
+            return websiteRepository.save(temp);
+        }
+        return null;
+    }
+
+    //to test
+    @DeleteMapping("/{title}")
+    @PreAuthorize("hasRole('USER')")
+    public String delete(@RequestParam String username, @RequestBody Website website) {
+        String websiteTitleToDelete = website.getWebsiteTitle();
+        if (!website.getCreatorOfWebsite().equals(currentUser().getId()))
+        {  return "You have no access to this function.";
+        }
+        if (websiteRepository.findByWebsiteTitle(website.getWebsiteTitle()).equals(website)){
+            websiteRepository.delete(website);
+            return "Site: " + websiteTitleToDelete + " has been deleted.";
+        }
+        return "Something went wrong, try again";
+    }
 
 
-    @DeleteMapping
+    @PutMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public String delete() {
-        return "Website is deleted.";
+    public String update() {
+        return "Website updated.";
+    }
+
+    @DeleteMapping("/deleteWebsite")
+    @PreAuthorize("hasRole('ADMIN')")
+    public String delete(@RequestBody Website website) {
+        String websiteTitleToDelete = website.getWebsiteTitle();
+        if (!website.getListOfModeratorsOnWebsite().contains(currentUser().getId()))
+        {  return "You have no access to this function.";
+        }
+        if (websiteRepository.findByWebsiteTitle(website.getWebsiteTitle()).equals(website)){
+            websiteRepository.delete(website);
+            return "Site: " + websiteTitleToDelete + " has been deleted.";
+        }
+        return "Something went wrong, try again";
     }
 
 }
